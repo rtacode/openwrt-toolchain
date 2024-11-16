@@ -1,0 +1,44 @@
+name: Build OpenWRT Image
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          apt update
+          apt install -y build-essential git wget unzip
+
+      - name: Clone OpenWRT repository
+        run: |
+          git clone https://git.openwrt.org/openwrt/openwrt.git
+          cd openwrt
+          git checkout openwrt-$RELEASE
+
+      - name: Install feeds
+        run: |
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Configure build
+        run: |
+          make defconfig
+
+      - name: Build image
+        run: |
+          make image PROFILE=generic
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: bin/targets/x86/generic/*.img
+          tag: "openwrt-$RELEASE"
+          overwrite: true
+          body: "Automatically generated release"
