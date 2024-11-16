@@ -3,6 +3,12 @@ name: Build OpenWRT Image
 on:
   workflow_dispatch:
 
+env:
+  TARGET: x86
+  RELEASE: 24.10
+  BRANCH: openwrt-24.10
+  DEFCONFIG: x86_generic_defconfig
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -41,9 +47,9 @@ jobs:
 
       - name: Clone OpenWRT repository
         run: |
-          git clone https://git.openwrt.org/openwrt/openwrt.git
+          git clone https://github.com/openwrt/openwrt.git
           cd openwrt
-          git checkout openwrt-$RELEASE
+          git checkout openwrt-${RELEASE}
 
       - name: Install feeds
         run: |
@@ -63,6 +69,6 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: bin/targets/x86/generic/*.img
-          tag: "openwrt-$RELEASE"
+          tag: "openwrt-${RELEASE}"
           overwrite: true
           body: "Automatically generated release"
